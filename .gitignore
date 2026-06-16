@@ -1,0 +1,32 @@
+# Node modules & Virtual Environments
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+.env.*
+
+# ⚠️ ALL LARGE DATA AND MODEL FILES (भाऊ, हे खूप महत्त्वाचं आहे)
+data/
+reports/
+notebooks/.ipynb_checkpoints/
+
+# मॉडेल्स फोल्डरमधील सगळ्या मोठ्या फाईल्स ब्लॉक करा
+models/**/*.safetensors
+models/**/*.bin
+models/**/*.pkl
+models/**/*.npy
+models/**/*.parquet
+models/**/checkpoint-*/
+
+# स्क्रिप्ट्स मधील डेटा फाईल्स
+scripts/*.parquet
+scripts/*.index
+scripts/*.parquet*
+
+# OS files
+Thumbs.db
+.DS_Store
