@@ -9,6 +9,7 @@ connectDB();
 
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 // Routes
 const retrievalRoutes = require("./routes/retrievalRoutes");
@@ -28,7 +29,7 @@ app.use(cors());
 app.use(express.json());
 
 // Health Check Route
-app.get("/", (req, res) => {
+app.get("/health", (req, res) => {
 res.status(200).json({
 success: true,
 project: "ICJIP",
@@ -66,6 +67,14 @@ app.use("/api/classification", classificationRoutes);
 app.use("/api/article", articleRoutes);
 app.use("/api/knowledge-graph", knowledgeGraphRoutes);
 app.use("/api/legal-llm",legalLLMRoutes);
+
+// Serve React frontend static files (from build output)
+app.use(express.static(path.join(__dirname, "public")));
+
+// SPA fallback — any non-API route serves index.html for React Router
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 // Error Middleware
 app.use(notFound);
