@@ -1,4 +1,4 @@
-name: Build and Deploy NyaySarthi to Azure Web App
+name: Build and Deploy Nyay Sarthi to Azure Web App
 
 on:
   push:
@@ -7,24 +7,24 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 20.x
+  NODE_VERSION: "20.x"
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
       # Checkout Repository
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
       # Setup Node.js
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -34,75 +34,75 @@ jobs:
             app/frontend/package-lock.json
             app/backend/package-lock.json
 
-      # ----------------------------------------------------
-      # Install Frontend
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
+      # Install Frontend Dependencies
+      # ------------------------------------------------------------
       - name: Install Frontend Dependencies
         working-directory: app/frontend
         run: npm ci
 
-      # ----------------------------------------------------
-      # Build Frontend
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
+      # Build React Frontend
+      # ------------------------------------------------------------
       - name: Build Frontend
         working-directory: app/frontend
         run: npm run build
 
-      # ----------------------------------------------------
-      # Copy React Build
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
+      # Copy React Build to Backend Public Folder
+      # ------------------------------------------------------------
       - name: Copy Frontend Build
         run: |
           rm -rf app/backend/public
           mkdir -p app/backend/public
           cp -R app/frontend/dist/. app/backend/public/
 
-      # ----------------------------------------------------
-      # Install Backend
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
+      # Install Backend Dependencies
+      # ------------------------------------------------------------
       - name: Install Backend Dependencies
         working-directory: app/backend
         run: npm ci --omit=dev
 
-      # ----------------------------------------------------
-      # Remove Unnecessary Files
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
+      # Remove Files Not Needed in Deployment
+      # ------------------------------------------------------------
       - name: Clean Deployment Package
         working-directory: app/backend
         run: |
           rm -rf \
-            tests \
-            docs \
-            coverage \
             .git \
             .github \
             .vscode \
+            tests \
+            docs \
+            coverage \
             logs \
             temp \
             cache
 
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
       # Create Deployment ZIP
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
       - name: Create Deployment ZIP
         run: |
           cd app/backend
           zip -r ../../release.zip . \
             -x "*.git*" \
-            "*.github*" \
-            "*.vscode*" \
-            "*.DS_Store"
+            -x "*.github*" \
+            -x "*.vscode*" \
+            -x "*.DS_Store"
 
-      # ----------------------------------------------------
-      # Show ZIP Size
-      # ----------------------------------------------------
-      - name: Display ZIP Size
+      # ------------------------------------------------------------
+      # Display ZIP Size
+      # ------------------------------------------------------------
+      - name: Show Deployment Package Size
         run: ls -lh release.zip
 
-      # ----------------------------------------------------
-      # Upload Artifact
-      # ----------------------------------------------------
-      - name: Upload Artifact
+      # ------------------------------------------------------------
+      # Upload Build Artifact
+      # ------------------------------------------------------------
+      - name: Upload Deployment Artifact
         uses: actions/upload-artifact@v4
         with:
           name: node-app
@@ -115,44 +115,35 @@ jobs:
 
     environment:
       name: Production
-      url: ${{ steps.deploy.outputs.webapp-url }}
-
-    permissions:
-      id-token: write
 
     steps:
-
-      # ----------------------------------------------------
-      # Download Artifact
-      # ----------------------------------------------------
-      - name: Download Artifact
+      # ------------------------------------------------------------
+      # Download Deployment Artifact
+      # ------------------------------------------------------------
+      - name: Download Deployment Artifact
         uses: actions/download-artifact@v4
         with:
           name: node-app
 
-      # ----------------------------------------------------
-      # Azure Login
-      # ----------------------------------------------------
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
+      # ------------------------------------------------------------
+      # Show ZIP Before Deployment
+      # ------------------------------------------------------------
+      - name: Verify ZIP
+        run: ls -lh release.zip
 
-      # ----------------------------------------------------
-      # Deploy
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
+      # Deploy to Azure Web App
+      # ------------------------------------------------------------
       - name: Deploy to Azure Web App
         id: deploy
         uses: azure/webapps-deploy@v3
         with:
           app-name: nyaysarthi
-          slot-name: Production
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: release.zip
 
-      # ----------------------------------------------------
-      # Deployment Success
-      # ----------------------------------------------------
+      # ------------------------------------------------------------
+      # Deployment Completed
+      # ------------------------------------------------------------
       - name: Deployment Complete
-        run: echo "Deployment Finished Successfully."
+        run: echo "Nyay Sarthi deployed successfully!"
