@@ -71,8 +71,12 @@ app.use("/api/legal-llm",legalLLMRoutes);
 // Serve React frontend static files (from build output)
 app.use(express.static(path.join(__dirname, "public")));
 
+app.use((req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 // SPA fallback — any non-API route serves index.html for React Router
-app.get("*", (req, res) => {
+app.get("/*splat", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
