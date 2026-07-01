@@ -45,7 +45,7 @@ jobs:
       # Build React Frontend
       # ------------------------------------------------------------
       - name: Build Frontend
-        working-directory: app/frontend
+        working-directory: app/frontend/src
         run: npm run build
 
       # ------------------------------------------------------------
